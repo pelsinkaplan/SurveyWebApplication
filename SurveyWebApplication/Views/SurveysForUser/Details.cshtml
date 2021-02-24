@@ -1,0 +1,41 @@
+﻿@model SurveyWebApplication.Models.Survey
+
+@{
+    ViewData["Title"] = "Anket Detayları";
+}
+
+<h1>Anket Detayları</h1>
+
+<div>
+    <h4>@Html.DisplayFor(model => model.Header)</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Details)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Details)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Deadline)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Deadline)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumberOfYes)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberOfYes)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumberOfNo)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberOfNo)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Index">Katıldığım Anketler</a>
+</div>

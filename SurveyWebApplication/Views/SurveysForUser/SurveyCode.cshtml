@@ -1,0 +1,20 @@
+﻿@model SurveyWebApplication.Models.Survey
+
+@{
+    ViewData["Title"] = "SurveyCode";
+}
+
+<h1>SurveyCode</h1>
+
+<h4>Survey</h4>
+<hr />
+@using (Html.BeginForm())
+{
+    <input type="text" name="Code" />
+    <input type="submit" />
+}
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
