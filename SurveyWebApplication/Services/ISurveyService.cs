@@ -19,5 +19,8 @@ namespace SurveyWebApplication.Services
         Survey GetSurveyByCode(string code);
         int AddComment(Survey survey, string comment);
         bool UserJoinSurvey(Survey survey, User user);
+        void DownloadPdf(int id);
+        bool IsRequiredVoteOkey(int id);
+        User GetSurveysAdmin(int id);
     }
 }

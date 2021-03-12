@@ -35,7 +35,8 @@ namespace SurveyWebApplication
             services.AddSession();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                    .AddCookie(option => {
+                    .AddCookie(option =>
+                    {
                         option.LoginPath = "/Account/Login";
                     });
 
@@ -63,7 +64,6 @@ namespace SurveyWebApplication
 
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.UseEndpoints(endpoints =>
             {

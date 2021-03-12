@@ -43,12 +43,6 @@ namespace SurveyWebApplication.Services
             return null;
         }
 
-        //public IList<Survey> GetUsersSurveys(int id)
-        //{
-        //    UserSurveyService userSurveyService = new UserSurveyService(dbContext);
-        //    return userSurveyService.GetUsersSurveys(id);
-        //}
-
         public User ValidUser(string username, string password)
         {
             List<User> users = GetUsers();

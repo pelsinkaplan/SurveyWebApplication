@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using SurveyWebApplication.Data;
 using SurveyWebApplication.Models;
 using SurveyWebApplication.Services;
+//using Microsoft.Office.Interop.Word;
 
 namespace SurveyWebApplication.Controllers
 {
@@ -85,6 +88,7 @@ namespace SurveyWebApplication.Controllers
         }
 
         // GET: Surveys/Details/id
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             if (id == null)
@@ -101,12 +105,6 @@ namespace SurveyWebApplication.Controllers
             return View(survey);
         }
 
-        // GET: Surveys/Delete
-        public async Task<IActionResult> Delete()
-        {
-            return View();
-        }
-
         // GET: Surveys/Delete/id
         public async Task<IActionResult> Delete(int id)
         {
@@ -118,5 +116,15 @@ namespace SurveyWebApplication.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public IActionResult DownloadPdf(int id)
+        {
+            var Renderer = new IronPdf.HtmlToPdf();
+            var PDF = Renderer.RenderUrlAsPdf("https://localhost:44393/Surveys/Details/" + id.ToString());
+            var OutputPath = surveyService.GetSurveyById(id).Header + ".pdf";
+            PDF.SaveAs("C:\\Users\\pelsi\\OneDrive\\Masaüstü\\" + OutputPath);
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
     }
 }
+

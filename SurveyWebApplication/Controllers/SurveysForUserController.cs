@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -46,9 +47,10 @@ namespace SurveyWebApplication.Controllers
             User user = userService.GetUserByUsername(username);
             foreach (Survey survey in surveys)
             {
-                if (surveyService.IsUserJoinedSurvey(survey, user))
+                if (!surveyService.IsUserJoinedSurvey(survey, user))
                     if (!surveyService.DidDeadlinePass(survey))
-                        surveysUserCanJoin.Add(survey);
+                        if (survey.Code == null)
+                            surveysUserCanJoin.Add(survey);
             }
             return View(surveysUserCanJoin);
         }
@@ -83,50 +85,113 @@ namespace SurveyWebApplication.Controllers
             return View(survey);
         }
 
-        // GET: Surveys/JoinSurvey/id
-        public async Task<IActionResult> Survey(string code, Survey survey, string yesNo)
+        // GET: Surveys/JoinSurvey/survey id yesNo
+        [HttpPost]
+        public IActionResult JoinSurvey(Survey survey, int id, string yesNo)
         {
-            Survey wantedSurvey = surveyService.GetSurveyByCode(code);
-            if (surveyService.GetSurveyById(wantedSurvey.Id) == null)
+
+            if (surveyService.GetSurveyById(id) == null)
             {
                 return NotFound();
             }
-            surveyService.AddComment(surveyService.GetSurveyById(wantedSurvey.Id), survey.Details);
-            surveyService.IncreaseYesNoNum(surveyService.GetSurveyById(wantedSurvey.Id), yesNo);
+            if (survey.Details != null)
+                surveyService.AddComment(surveyService.GetSurveyById(id), survey.Details);
+            surveyService.IncreaseYesNoNum(surveyService.GetSurveyById(id), yesNo);
             var username = User.FindFirstValue(ClaimTypes.Name);
             User user = userService.GetUserByUsername(username);
-            surveyService.UserJoinSurvey(surveyService.GetSurveyById(wantedSurvey.Id), user);
+            surveyService.UserJoinSurvey(surveyService.GetSurveyById(id), user);
+            if (surveyService.IsRequiredVoteOkey(id))
+            {
+                SendEmail(surveyService.GetSurveyById(id).Header, surveyService.GetSurveyById(id).Header, surveyService.GetSurveysAdmin(id).Email);
+            }
+            return RedirectToAction(nameof(Index));
+        }
+        // GET: Surveys/JoinSurvey/id
+        public async Task<IActionResult> ErrorPage(string error)
+        {
+            ViewBag.Error = error;
+            return View();
+        }
+
+
+        // GET: Surveys/JoinSurvey/id
+        public async Task<IActionResult> Survey(string code)
+        {
+            if (code == null)
+                return RedirectToAction(nameof(ErrorPage), new { error = "Kodu Olmayan Anketlere Anketlere Katıl Sayfasından Ulaşabilirsiniz." });
+
+            Survey wantedSurvey = surveyService.GetSurveyByCode(code);
+            if (wantedSurvey == null)
+                return RedirectToAction(nameof(ErrorPage), new { error = "Aradığınız Kodda Bir Anket Bulunmamaktadır!" });
+
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            User user = userService.GetUserByUsername(username);
+            if (surveyService.IsUserJoinedSurvey(surveyService.GetSurveyByCode(code), user))
+
+                return RedirectToAction(nameof(ErrorPage), new { error = "Bu ankete katıldınız!" });
+
+            if (surveyService.DidDeadlinePass(surveyService.GetSurveyByCode(code)))
+                return RedirectToAction(nameof(ErrorPage), new { error = "Bu anketin son oylanma tarihi geçmiş!" });
+
             return View(wantedSurvey);
         }
 
         // GET: Surveys/JoinSurvey/id
+        [HttpPost]
+        public async Task<IActionResult> Survey(int id, Survey survey, string yesNo)
+        {
+            Survey wantedSurvey = surveyService.GetSurveyById(id);
+
+            if (survey.Details != null)
+                surveyService.AddComment(surveyService.GetSurveyById(wantedSurvey.Id), survey.Details);
+            surveyService.IncreaseYesNoNum(surveyService.GetSurveyById(wantedSurvey.Id), yesNo);
+            var username = User.FindFirstValue(ClaimTypes.Name);
+            User user = userService.GetUserByUsername(username);
+            surveyService.UserJoinSurvey(surveyService.GetSurveyById(wantedSurvey.Id), user);
+            if (surveyService.IsRequiredVoteOkey(wantedSurvey.Id))
+            {
+                SendEmail(surveyService.GetSurveyById(wantedSurvey.Id).Header, surveyService.GetSurveyById(wantedSurvey.Id).Header, surveyService.GetSurveysAdmin(wantedSurvey.Id).Email);
+            }
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+
+        // GET: Surveys/SurveyCode
         public async Task<IActionResult> SurveyCode()
         {
             return View();
         }
 
-        // GET: Surveys/JoinSurvey/id
+        // GET: Surveys/SurveyCode/survey
         [HttpPost]
         public async Task<IActionResult> SurveyCode(Survey survey)
         {
-            surveyService.GetSurveyByCode(survey.Code);
             return RedirectToAction(nameof(Survey), new { code = survey.Code });
         }
 
-        // GET: Surveys/JoinSurvey/id
-        [HttpPost]
-        public IActionResult JoinSurvey(Survey survey, int id, string yesNo)
+        public void SendEmail(string subject, string body, string email)
         {
-            if (surveyService.GetSurveyById(id) == null)
+            MailMessage ePosta = new MailMessage();
+            ePosta.From = new MailAddress("anketim.temp@gmail.com");
+            //
+            ePosta.To.Add(email);
+            ePosta.Subject = subject + "Anketi";
+            ePosta.Body = body + " Anketi için gerekli katılım sağlandı.";
+            //
+            SmtpClient smtp = new SmtpClient();
+            //
+            smtp.Credentials = new System.Net.NetworkCredential("anketim.temp@gmail.com", "0123456789.At");
+            smtp.Port = 587;
+            smtp.Host = "smtp.gmail.com";
+            smtp.EnableSsl = true;
+            object userState = ePosta;
+            try
             {
-                return NotFound();
+                smtp.Send(ePosta);
             }
-            surveyService.AddComment(surveyService.GetSurveyById(id), survey.Details);
-            surveyService.IncreaseYesNoNum(surveyService.GetSurveyById(id), yesNo);
-            var username = User.FindFirstValue(ClaimTypes.Name);
-            User user = userService.GetUserByUsername(username);
-            surveyService.UserJoinSurvey(surveyService.GetSurveyById(id), user);
-            return View(surveyService.GetSurveyById(id));
+            catch (SmtpException ex)
+            {
+            }
         }
     }
 }

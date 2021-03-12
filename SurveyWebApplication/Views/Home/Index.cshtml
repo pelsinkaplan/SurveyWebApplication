@@ -6,9 +6,25 @@
     <h1 class="display-4">Hoşgeldiniz! Ne Yapmak İstersiniz?</h1>
     <hr />
     <div>
-        <a class="btn btn-outline-dark text-xl-center" href="/Surveys/Create">Anket Oluştur</a>
-        <a class="btn btn-outline-dark text-xl-center" href="/SurveysForUser/SurveysPage">Ankete Katıl</a>
-        <a class="btn btn-outline-dark text-xl-center" href="/SurveysForUser/SurveyCode">Koda Göre Ankete Katıl</a>
+        @{
+            if (ViewBag.User != null)
+            {
+                if (ViewBag.User.RoleId == 1)
+                {
+                    <a class="btn btn-outline-dark text-xl-center" href="/Surveys/Index">Oluşturduğum Anketler</a>
+                    <a class="btn btn-outline-dark text-xl-center" href="/Surveys/Create">Anket Oluştur</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-dark text-xl-center" href="/SurveysForUser/Index">Katıldığım Anketler</a>
+                    <a class="btn btn-outline-dark text-xl-center" href="/SurveysForUser/SurveysPage">Ankete Katıl</a>
+                    <a class="btn btn-outline-dark text-xl-center" href="/SurveysForUser/SurveyCode">Koda Göre Ankete Katıl</a>
+                }
+            }
+            else
+            {
+                <h3>Lütfen Önce Giriş Yapınız.</h3>
+            }
+        }
     </div>
-
 </div>

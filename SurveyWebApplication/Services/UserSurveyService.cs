@@ -38,6 +38,5 @@ namespace SurveyWebApplication.Services
             }
             return users;
         }
-
     }
 }

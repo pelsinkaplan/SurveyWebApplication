@@ -1,20 +1,20 @@
 ﻿@model SurveyWebApplication.Models.Survey
 
 @{
-    ViewData["Title"] = "SurveyCode";
+    ViewData["Title"] = "Koda Göre Anket Arama";
 }
 
-<h1>SurveyCode</h1>
+<h1>Koda Göre Anket Arama</h1>
 
-<h4>Survey</h4>
+<h4>Aradığınız anketin kodunu giriniz.</h4>
 <hr />
 @using (Html.BeginForm())
 {
     <input type="text" name="Code" />
-    <input type="submit" />
+    <input type="submit" value="Anketi Bul" />
 }
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a href="/">Anasayfaya Dön</a>
 </div>
 

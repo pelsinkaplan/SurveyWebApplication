@@ -44,7 +44,6 @@ namespace SurveyWebApplication.Controllers
                     claims.Add(new Claim(ClaimTypes.Role, "Admin"));
                 else if (i == 2)
                     claims.Add(new Claim(ClaimTypes.Role, "User"));
-
                 ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
@@ -54,11 +53,8 @@ namespace SurveyWebApplication.Controllers
                 }
                 return Redirect("/");
             }
-
-
             ModelState.AddModelError("hata", "Kullanıcı ya da şifre yanlış");
             return View();
-
         }
 
         public async Task<IActionResult> LogOut()

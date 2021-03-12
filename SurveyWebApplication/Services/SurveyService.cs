@@ -49,6 +49,16 @@ namespace SurveyWebApplication.Services
             return userSurveyService.GetSurveysUsers(id);
         }
 
+        public User GetSurveysAdmin(int id)
+        {
+            foreach (User user in GetSurveysUsers(id))
+            {
+                if (user.RoleId == 1)
+                    return user;
+            }
+            return null;
+        }
+
         public int EditSurvey(Survey survey)
         {
             dbContext.Entry(survey).State = EntityState.Modified;
@@ -98,10 +108,10 @@ namespace SurveyWebApplication.Services
             UserService userService = new UserService(dbContext);
             foreach (Survey usersSurvey in userService.GetUsersSurveys(user.Id))
             {
-                if (survey.Header == usersSurvey.Header)
-                    return false;
+                if (survey.Id == usersSurvey.Id)
+                    return true;
             }
-            return true;
+            return false;
         }
 
         public bool UserJoinSurvey(Survey survey, User user)
@@ -123,7 +133,7 @@ namespace SurveyWebApplication.Services
             List<Comment> comments = new List<Comment>();
             foreach (Comment comment in dbContext.Comments)
             {
-                if (comment.SurveyId == survey.Id)
+                if (comment.SurveyId == survey.Id && comment.CommentString != null)
                     comments.Add(comment);
             }
             return comments;
@@ -137,6 +147,21 @@ namespace SurveyWebApplication.Services
             commentObject.Survey = survey;
             dbContext.Comments.Add(commentObject);
             return dbContext.SaveChanges();
+        }
+
+        public void DownloadPdf(int id)
+        {
+            var Renderer = new IronPdf.HtmlToPdf();
+            var PDF = Renderer.RenderUrlAsPdf("https://localhost:44393/Surveys/Details/" + id.ToString());
+            var OutputPath = GetSurveyById(id).Header + ".pdf";
+            PDF.SaveAs("C:\\Users\\pelsi\\OneDrive\\Masaüstü\\" + OutputPath);
+        }
+
+        public bool IsRequiredVoteOkey(int id)
+        {
+            if (GetSurveyById(id).NumberOfYes == GetSurveyById(id).NumberOfApprovingRequired)
+                return true;
+            return false;
         }
     }
 }
